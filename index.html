@@ -277,11 +277,11 @@
           <div class="select is-fullwidth">
             <select id="modelSelector">
               <option value="gpt-4o">GPT-4o</option>
-              <option value="phi-3.5">Phi-3.5</option>
-              <option value="llava-1.5-13b">LLaVA 1.5 13B</option>
-              <option value="internvl">InternVL</option>
+              <!-- <option value="phi-3.5">Phi-3.5</option> -->
+              <!-- <option value="llava-1.5-13b">LLaVA 1.5 13B</option> -->
+              <!-- <option value="internvl">InternVL</option> -->
               <option value="qwen-72b">Qwen 72B</option>
-              <option value="dolphin">Dolphin</option>
+              <!-- <option value="dolphin">Dolphin</option> -->
               <option value="drivelm">DriveLM</option>
             </select>
           </div>
@@ -291,18 +291,9 @@
             <select id="corruptionSelector">
               <option value="clean">Clean</option>
               <option value="text-only">Text-only</option>
-              <option value="bright">Bright</option>
-              <option value="dark">Dark</option>
               <option value="snow">Snow</option>
-              <option value="fog">Fog</option>
-              <option value="rain">Rain</option>
-              <option value="lens">Lens</option>
-              <option value="water">Water</option>
               <option value="saturate">Saturate</option>
               <option value="motion">Motion</option>
-              <option value="zoom">Zoom</option>
-              <option value="bit">Bit</option>
-              <option value="quant">Quant</option>
               <option value="h265">H.265</option>
             </select>
           </div>
@@ -385,8 +376,14 @@
       // Fetch model output
       const modelOutput = await fetchModelOutput(caseOption, model, corruption);
 
+      // Determine the image path based on the corruption choice
+      let imgPath = caseData.img.replace('{corruption}', corruption);
+      if (corruption === 'text-only') {
+        imgPath = caseData['text-only-img'];
+      }
+
       // Add the image content from the JSON file in a 2x3 layout
-      const images = Array.isArray(caseData.img) ? caseData.img : [caseData.img];
+      const images = Array.isArray(imgPath) ? imgPath : [imgPath];
       const imageContainer = document.createElement('div');
       imageContainer.className = 'columns is-multiline is-centered';
   
