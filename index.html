@@ -258,6 +258,200 @@
 
 <section class="section">
   <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Demo</h2>
+    <div class="columns">
+      <!-- Sidebar -->
+      <div class="column is-one-quarter">
+        <aside class="menu">
+          <p class="menu-label">Case</p>
+          <div class="select is-fullwidth">
+            <select id="caseSelector">
+              <option value="case1">Case 1</option>
+              <option value="case2">Case 2</option>
+              <option value="case3">Case 3</option>
+              <option value="case4">Case 4</option>
+            </select>
+          </div>
+
+          <p class="menu-label">Model</p>
+          <div class="select is-fullwidth">
+            <select id="modelSelector">
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="phi-3.5">Phi-3.5</option>
+              <option value="llava-1.5-13b">LLaVA 1.5 13B</option>
+              <option value="internvl">InternVL</option>
+              <option value="qwen-72b">Qwen 72B</option>
+              <option value="dolphin">Dolphin</option>
+              <option value="drivelm">DriveLM</option>
+            </select>
+          </div>
+
+          <p class="menu-label">Corruption</p>
+          <div class="select is-fullwidth">
+            <select id="corruptionSelector">
+              <option value="clean">Clean</option>
+              <option value="text-only">Text-only</option>
+              <option value="bright">Bright</option>
+              <option value="dark">Dark</option>
+              <option value="snow">Snow</option>
+              <option value="fog">Fog</option>
+              <option value="rain">Rain</option>
+              <option value="lens">Lens</option>
+              <option value="water">Water</option>
+              <option value="saturate">Saturate</option>
+              <option value="motion">Motion</option>
+              <option value="zoom">Zoom</option>
+              <option value="bit">Bit</option>
+              <option value="quant">Quant</option>
+              <option value="h265">H.265</option>
+            </select>
+          </div>
+
+          <p class="menu-label">Prompt</p>
+          <div class="select is-fullwidth">
+            <select id="promptSelector">
+              <option value="baseline">Baseline</option>
+              <option value="rubric-aware">Rubric-aware</option>
+              <option value="question-aware">Question-aware</option>
+              <option value="context-aware">Context-aware</option>
+            </select>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Content Area -->
+      <div class="column">
+        <div id="contentBox" class="content">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const modelSelector = document.getElementById('modelSelector');
+  const corruptionSelector = document.getElementById('corruptionSelector');
+  const promptSelector = document.getElementById('promptSelector');
+  const caseSelector = document.getElementById('caseSelector');
+  const contentBox = document.getElementById('contentBox');
+  
+  async function fetchCaseData(caseName) {
+    try {
+      const response = await fetch(`./static/demos/cases/${caseName}.json`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching case data:', error);
+      throw error;
+    }
+  }
+
+  async function fetchModelOutput(caseName, model, corruption) {
+    const modelLower = model.toLowerCase();
+    const filePath = `./static/demos/res/${caseName}-${modelLower}-${corruption}.json`;
+    try {
+      const response = await fetch(filePath);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching model output:', error);
+      throw error;
+    }
+  }
+
+  function highlightCoordinates(text, color) {
+    return text
+      .replace(/\*\*([^*]+)\*\*/g, `<strong style="color: ${color};">$1</strong>`)
+      .replace(/\n/g, '<br>');
+  }
+  
+  async function updateContent() {
+    const model = modelSelector.value;
+    const corruption = corruptionSelector.value;
+    const prompt = promptSelector.value;
+    const caseOption = caseSelector.value;
+  
+    contentBox.innerHTML = '';
+  
+    try {
+      // Fetch data for the selected case
+      const caseData = await fetchCaseData(caseOption);
+  
+      // Fetch model output
+      const modelOutput = await fetchModelOutput(caseOption, model, corruption);
+
+      // Add the image content from the JSON file in a 2x3 layout
+      const images = Array.isArray(caseData.img) ? caseData.img : [caseData.img];
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'columns is-multiline is-centered';
+  
+      images.forEach((imgSrc, index) => {
+        const imageColumn = document.createElement('div');
+        imageColumn.className = 'column is-one-third';
+        imageColumn.innerHTML = `
+          <img src="${imgSrc}" alt="Case Image ${index + 1}" style="width: 100%; max-width: 500px;">
+        `;
+        imageContainer.appendChild(imageColumn);
+      });
+  
+      contentBox.appendChild(imageContainer);
+  
+      // Add static icons for the rows (icon1, icon2, icon3, icon4)
+      for (let i = 1; i <= 4; i++) {
+        const row = document.createElement('div');
+        row.className = 'columns';
+  
+        const iconColumn = document.createElement('div');
+        iconColumn.className = 'column is-one-quarter';
+        iconColumn.innerHTML = `<img src="./static/images/icon${i}.png" alt="Icon ${i}" style="width: 30%; max-width: 100px;">`;
+  
+        const textColumn = document.createElement('div');
+        textColumn.className = 'column';
+        textColumn.style = 'max-height: 150px; overflow-y: auto; padding: 10px; border: 1px solid #ccc; margin: 10px; box-sizing: border-box;';
+        if (i === 1) {
+          textColumn.innerHTML = `
+            <p style="background-color: rgb(238,244,250); color: rgb(51,94,150); margin: 0; padding: 10px;"><strong>Question:</strong> ${highlightCoordinates(caseData.Q, 'rgb(51,94,150)')}</p>
+          `;
+        } else if (i === 2) {
+          textColumn.innerHTML = `
+            <p style="background-color: rgb(222,241,211); color: rgb(76,124,49); margin: 0; padding: 10px;"><strong>Answer:</strong> ${highlightCoordinates(modelOutput.A, 'rgb(76,124,49)')}</p>
+          `;
+        } else if (i === 3) {
+          textColumn.innerHTML = `
+            <p style="background-color: rgb(250,224,160); color: rgb(224,146,53); margin: 0; padding: 10px;"><strong>GT:</strong> ${highlightCoordinates(caseData.A, 'rgb(224,146,53)')}</p>
+          `;
+        } else {
+          textColumn.innerHTML = `
+            <p style="background-color: rgb(236,208,236); color: rgb(110,39,107); margin: 0; padding: 10px;"><strong>Prompt:</strong> ${highlightCoordinates(modelOutput[prompt], 'rgb(110,39,107)')}</p>
+          `;
+        }
+  
+        row.appendChild(iconColumn);
+        row.appendChild(textColumn);
+        contentBox.appendChild(row);
+      }
+  
+    } catch (error) {
+      contentBox.innerHTML = '<p class="has-text-danger">Failed to load the selected case data.</p>';
+    }
+  }
+  
+  modelSelector.addEventListener('change', updateContent);
+  corruptionSelector.addEventListener('change', updateContent);
+  promptSelector.addEventListener('change', updateContent);
+  caseSelector.addEventListener('change', updateContent);
+  
+  // Initialize content
+  updateContent();
+</script>
+
+<section class="section">
+  <div class="container is-max-desktop">
     <!-- Abstract. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
