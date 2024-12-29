@@ -268,7 +268,7 @@
             <select id="caseSelector">
               <option value="case1">Case 1</option>
               <option value="case2">Case 2</option>
-              <option value="case3">Case 3</option>
+              <!-- <option value="case3">Case 3</option> -->
               <!-- <option value="case4">Case 4</option> -->
             </select>
           </div>
@@ -458,7 +458,7 @@
           `;
         } else {
           textColumn.innerHTML = `
-            <p style="background-color: rgb(236,208,236); color: rgb(110,39,107); margin: 0; padding: 10px;"><strong>Prompt:</strong> ${highlightCoordinates(modelOutput[prompt], 'rgb(110,39,107)')}</p>
+            <p style="background-color: rgb(236,208,236); color: rgb(110,39,107); margin: 0; padding: 10px;"><strong>Evaluator:</strong> ${highlightCoordinates(modelOutput[prompt], 'rgb(110,39,107)')}</p>
           `;
         }
   
