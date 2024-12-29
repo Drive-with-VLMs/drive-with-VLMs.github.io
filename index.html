@@ -269,7 +269,7 @@
               <option value="case1">Case 1</option>
               <option value="case2">Case 2</option>
               <option value="case3">Case 3</option>
-              <option value="case4">Case 4</option>
+              <!-- <option value="case4">Case 4</option> -->
             </select>
           </div>
 
@@ -291,9 +291,18 @@
             <select id="corruptionSelector">
               <option value="clean">Clean</option>
               <option value="text-only">Text-only</option>
+              <!-- <option value="bright">Bright</option> -->
+              <!-- <option value="dark">Dark</option> -->
               <option value="snow">Snow</option>
+              <!-- <option value="fog">Fog</option> -->
+              <!-- <option value="rain">Rain</option> -->
+              <!-- <option value="lens">Lens</option> -->
+              <!-- <option value="water">Water</option> -->
               <option value="saturate">Saturate</option>
               <option value="motion">Motion</option>
+              <!-- <option value="zoom">Zoom</option> -->
+              <!-- <option value="bit">Bit</option> -->
+              <!-- <option value="quant">Quant</option> -->
               <option value="h265">H.265</option>
             </select>
           </div>
@@ -319,6 +328,25 @@
     </div>
   </div>
 </section>
+
+<script>
+  caseSelector.addEventListener('change', () => {
+    const selectedCase = caseSelector.value;
+    const contextAwareOption = promptSelector.querySelector('option[value="context-aware"]');
+
+    if (selectedCase === 'case2') {
+      contextAwareOption.disabled = true;
+      if (promptSelector.value === 'context-aware') {
+        promptSelector.value = 'baseline';
+      }
+    } else {
+      contextAwareOption.disabled = false;
+    }
+  });
+
+  // Trigger change event to set initial state
+  caseSelector.dispatchEvent(new Event('change'));
+</script>
 
 <script>
   const modelSelector = document.getElementById('modelSelector');
@@ -377,19 +405,25 @@
       const modelOutput = await fetchModelOutput(caseOption, model, corruption);
 
       // Determine the image path based on the corruption choice
-      let imgPath = caseData.img.replace('{corruption}', corruption);
+      let imgPath = caseData.img;
       if (corruption === 'text-only') {
         imgPath = caseData['text-only-img'];
+      } else {
+        if (Array.isArray(imgPath)) {
+          imgPath = imgPath.map(path => path.replace('{corruption}', corruption));
+        } else {
+          imgPath = imgPath.replace('{corruption}', corruption);
+        }
       }
 
-      // Add the image content from the JSON file in a 2x3 layout
+      // Add the image content from the JSON file in a 2x3 layout if there are 6 images
       const images = Array.isArray(imgPath) ? imgPath : [imgPath];
       const imageContainer = document.createElement('div');
       imageContainer.className = 'columns is-multiline is-centered';
   
       images.forEach((imgSrc, index) => {
         const imageColumn = document.createElement('div');
-        imageColumn.className = 'column is-one-third';
+        imageColumn.className = images.length === 1 ? 'column is-half' : 'column is-one-third';
         imageColumn.innerHTML = `
           <img src="${imgSrc}" alt="Case Image ${index + 1}" style="width: 100%; max-width: 500px;">
         `;
